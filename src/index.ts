@@ -14,7 +14,7 @@ interface MCPMethod {
     required?: string[];
 }
 
-export class MCPSseReader {
+export class McpSseReader {
     private eventSource: EventSource;
     private endpointURL: string;
     private mcpProxySseUrl: string;
@@ -25,7 +25,7 @@ export class MCPSseReader {
     private connectionPromise: Promise<void>;
     private connectionResolve!: () => void;
     public clientInfo = {
-        "name": "MCPSseReader",
+        "name": "McpSseReader",
         "version": "1.0.0"
     }
     public serverInfo = {

@@ -18,10 +18,10 @@ npm install read-mcp-sse
 ### Basic Example
 
 ```typescript
-import { MCPSseReader } from 'read-mcp-sse';
+import { McpSseReader } from 'read-mcp-sse';
 
 // Create an instance with your MCP SSE URL
-const mcpReader = new MCPSseReader('http://your-mcp-server/sse');
+const mcpReader = new McpSseReader('http://your-mcp-server/sse');
 
 // Get available methods
 mcpReader.getMethods()
@@ -49,7 +49,7 @@ See the [example.ts](./src/example.ts) file for a more detailed example.
 
 ## API
 
-### `MCPSseReader`
+### `McpSseReader`
 
 #### Constructor
 

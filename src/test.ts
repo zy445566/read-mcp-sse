@@ -1,9 +1,9 @@
-import { MCPSseReader } from './index';
+import { McpSseReader } from './index';
 
 async function main() {
     // 创建MCP SSE读取器实例
     const mcpSseUrl = 'http://127.0.0.1:8881/sse';
-    const mcpReader = new MCPSseReader(mcpSseUrl);
+    const mcpReader = new McpSseReader(mcpSseUrl);
     
     try {
         // 等待连接建立
