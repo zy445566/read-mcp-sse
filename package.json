@@ -1,0 +1,35 @@
+{
+  "name": "read-mcp-sse",
+  "version": "1.0.0",
+  "description": "the tool taht read mcp server by sse url",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && node ./dist/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zy445566/read-mcp-sse.git"
+  },
+  "keywords": [
+    "mcp",
+    "sse",
+    "tool"
+  ],
+  "author": "zy445566",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zy445566/read-mcp-sse/issues"
+  },
+  "homepage": "https://github.com/zy445566/read-mcp-sse#readme",
+  "dependencies": {
+    "eventsource": "^4.0.0",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "typescript": "^5.8.3"
+  }
+}
