@@ -4,7 +4,7 @@ async function main() {
     // 创建MCP SSE读取器实例
     const mcpSseUrl = 'http://127.0.0.1:8881/sse';
     const mcpReader = new McpSseReader(mcpSseUrl);
-    
+    mcpReader.timeout = 5000;
     try {
         // 等待连接建立
         console.log('Connecting to MCP server...');

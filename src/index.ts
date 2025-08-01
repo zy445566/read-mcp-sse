@@ -2,7 +2,7 @@
 import {EventSource} from 'eventsource'
 import fetch from 'node-fetch';
 
-interface MCPMethod {
+export interface McpMethod {
     name: string;
     description?: string;
     inputSchema?: {
@@ -49,24 +49,38 @@ export class McpSseReader {
           body.id = this.sendId;
           this.sendId++;
         }
-        await fetch(this.endpointURL,{
-          method: 'post',
-          body: JSON.stringify(body),
-          headers: {'Content-Type': 'application/json'}
-        })
-        if(isReply) {
-          return;
+        try {
+          const response = await fetch(this.endpointURL,{
+            method: 'post',
+            body: JSON.stringify(body),
+            headers: {'Content-Type': 'application/json'}
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          
+          if(isReply) {
+            return;
+          }
+          
+          return await new Promise<any>((resolve, reject) => {
+              const timer = setTimeout(() => {
+                  this.responseIdMap.delete(body.id);
+                  return reject(new Error('Request timed out'));
+              }, this.timeout);
+              this.responseIdMap.set(body.id, (data)=>{
+                  clearTimeout(timer);
+                  resolve(data);
+              });
+          });
+        } catch (error) {
+          if(isReply) {
+            console.error('Error sending reply:', error);
+            return;
+          }
+          throw error;
         }
-        return await new Promise<any>((resolve, reject) => {
-            const timer = setTimeout(() => {
-                this.responseIdMap.delete(body.id);
-                return reject(new Error('Request timed out'));
-            }, this.timeout);
-            this.responseIdMap.set(body.id, (data)=>{
-              resolve(data);
-              clearTimeout(timer);
-            });
-        });
     }
 
 
@@ -107,15 +121,18 @@ export class McpSseReader {
         this.eventSource.addEventListener("endpoint", (event) => {
           this.endpointURL = new URL(event.data,this.mcpProxySseUrl).href;
           console.log('endpointURL',this.endpointURL)
-          this.initialize()
+          this.initialize().catch(err => console.error('Failed to initialize:', err));
         });
         this.eventSource.addEventListener("message",  (event) => {
             try {
                 const data = JSON.parse(event.data);
                 console.log('Received SSE message:', data);
                 if(this.responseIdMap.has(data.id)) {
-                    this.responseIdMap.get(data.id)(data);
-                    this.responseIdMap.delete(data.id);
+                    const callback = this.responseIdMap.get(data.id);
+                    if (callback) {
+                        callback(data);
+                        this.responseIdMap.delete(data.id);
+                    }
                 }
             } catch (error) {
                 console.error('Error parsing SSE message:', error);
@@ -134,7 +151,7 @@ export class McpSseReader {
     /**
      * Fetches the list of available MCP methods
      */
-    public async getMethods(): Promise<{tools:MCPMethod[]}> {
+    public async getMethods(): Promise<{tools:McpMethod[]}> {
         await this.waitForConnection();
         const data = await this.sendMessage({
             "method": "tools/list",
@@ -153,7 +170,7 @@ export class McpSseReader {
      * @param methodName The name of the method to call
      * @param params Parameters to pass to the method
      */
-    public async callMethod(methodName: string, params: any = {}): Promise<{content:any}> {
+    public async callMethod(methodName: string, params: any = {}): Promise<any> {
         await this.waitForConnection();
         const data = await this.sendMessage({
           "method": "tools/call",
@@ -177,7 +194,16 @@ export class McpSseReader {
         if (this.eventSource) {
             this.eventSource.close();
             this.isConnected = false;
+            // Clear all pending responses
+            this.responseIdMap.clear();
             console.log('MCP SSE connection closed');
         }
+    }
+    
+    /**
+     * Clears all pending responses
+     */
+    public clearPendingResponses(): void {
+        this.responseIdMap.clear();
     }
 }
