@@ -45,7 +45,7 @@ mcpReader.getMethods()
 
 ### Advanced Example
 
-See the [example.ts](./src/example.ts) file for a more detailed example.
+See the [example.ts](./src/test.ts) file for a more detailed example.
 
 ## API
 
